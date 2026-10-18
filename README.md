@@ -87,7 +87,7 @@ The admin UI follows the same TR/EN switch as the site.
 ## Deploy on Vercel
 
 1. Create a free Postgres (Neon, or Vercel → Storage). Copy its connection string.
-2. Vercel → Add New Project → import this repo. `vercel.json` sets the build to `npm run vercel-build` (generate client, `prisma db push`, `next build`).
+2. Vercel → Add New Project → import this repo. `vercel.json` sets the build to `npm run vercel-build` (generate client, `prisma db push`, idempotent seed, `next build`).
 3. Environment variables: `DATABASE_URL`, `ADMIN_EMAIL`, `ADMIN_PASSWORD` (10+ chars), `SESSION_SECRET` (`openssl rand -base64 48`), `NEXT_PUBLIC_SITE_URL` (your final https URL).
-4. Deploy, then seed once from your machine with the same env vars: `DATABASE_URL=... ADMIN_EMAIL=... ADMIN_PASSWORD=... npm run db:seed` (idempotent; only seeds an empty catalog and upserts the admin).
+4. Deploy. The build creates the tables and seeds an empty catalog plus the admin user (idempotent: existing content is never overwritten).
 5. Log in at `/admin/login`. Prices are shown as **KDV dahil** by default; to change it, edit the pricing note under Admin → Content.

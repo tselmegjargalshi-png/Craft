@@ -14,7 +14,7 @@
     "setup": "prisma generate && prisma db push && tsx prisma/seed.ts",
     "postinstall": "prisma generate",
     "test:e2e": "node scripts/e2e.mjs",
-    "vercel-build": "prisma generate && prisma db push --skip-generate && next build"
+    "vercel-build": "prisma generate && prisma db push --skip-generate && tsx prisma/seed.ts && next build"
   },
   "dependencies": {
     "@fontsource-variable/plus-jakarta-sans": "^5.3.0",
