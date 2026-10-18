@@ -3,16 +3,36 @@ import { prisma } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
-/** Liveness + database check. Returns only the error class, never connection details. */
+const clean = (e: unknown) => {
+  const err = e as { name?: string; code?: string; message?: string };
+  return {
+    error: err.name ?? "Error",
+    code: err.code ?? null,
+    hint: String(err.message ?? "").split("\n").slice(-3).join(" ").replace(/postgres(ql)?:\/\/\S+/g, "[url]").slice(0, 400),
+  };
+};
+
+/** Liveness + database check, one entry per query the public pages run. Never returns connection details. */
 export async function GET() {
-  try {
-    const services = await prisma.service.count();
-    return NextResponse.json({ ok: true, services });
-  } catch (e) {
-    const err = e as { name?: string; code?: string; message?: string };
-    return NextResponse.json(
-      { ok: false, error: err.name ?? "Error", code: err.code ?? null, hint: String(err.message ?? "").split("\n").slice(-2).join(" ").replace(/postgres(ql)?:\/\/\S+/g, "[url]").slice(0, 300) },
-      { status: 500 },
-    );
-  }
+  const checks: Record<string, unknown> = {};
+  const run = async (name: string, fn: () => Promise<unknown>) => {
+    try {
+      checks[name] = { ok: true, value: await fn() };
+    } catch (e) {
+      checks[name] = { ok: false, ...clean(e) };
+    }
+  };
+  await run("services", () => prisma.service.count());
+  await run("servicesWithPackages", async () =>
+    (await prisma.service.findMany({ include: { packages: { include: { features: true } } } })).length,
+  );
+  await run("faqs", () => prisma.faq.count());
+  await run("settings", () => prisma.setting.count());
+  await run("viewUpdate", async () => {
+    const s = await prisma.service.findFirst();
+    if (s) await prisma.service.update({ where: { id: s.id }, data: { views: { increment: 1 } } });
+    return !!s;
+  });
+  const ok = Object.values(checks).every((c) => (c as { ok: boolean }).ok);
+  return NextResponse.json({ ok, node: process.version, checks }, { status: ok ? 200 : 500 });
 }
