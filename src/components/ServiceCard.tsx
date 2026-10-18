@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { ServiceObject } from "./ServiceObject";
 import { formatPrice } from "@/lib/format";
 import { pick, type Locale } from "@/lib/locale";
@@ -6,12 +5,13 @@ import { lp } from "@/lib/locale-path";
 import type { T } from "@/lib/i18n";
 import type { ServiceWithPackages } from "@/lib/data";
 
+/** Plain anchor (full page load): the public layout depends on the URL language, so client-side transitions between /en and / pages are avoided. */
 export function ServiceCard({ service, t, locale, index }: { service: ServiceWithPackages; t: T; locale: Locale; index: number }) {
   const priced = service.packages.filter((p) => p.price !== null);
   const min = priced.length ? priced.reduce((a, b) => (a.price! <= b.price! ? a : b)) : null;
   const title = pick(service, "title", locale);
   return (
-    <Link
+    <a
       href={lp(locale, `/${service.slug}`)}
       className="group card lift flex h-full flex-col overflow-hidden"
       aria-label={`${title} — ${t("cta.details")}`}
@@ -40,6 +40,6 @@ export function ServiceCard({ service, t, locale, index }: { service: ServiceWit
           </span>
         </div>
       </div>
-    </Link>
+    </a>
   );
 }

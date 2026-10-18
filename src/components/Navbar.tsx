@@ -51,7 +51,7 @@ export function Navbar({
   return (
     <header
       className={`sticky top-0 z-40 transition-colors duration-300 ${
-        scrolled || open ? "border-b border-line bg-paper/90 backdrop-blur-md" : "border-b border-transparent bg-paper/0"
+        scrolled || open ? "bg-paper/90 backdrop-blur-md" : "bg-paper/0"
       }`}
     >
       <div className="wrap flex h-[4.5rem] items-center justify-between gap-4">

@@ -7,7 +7,7 @@ export function StickyCta({ contactHref, quote, whatsappHref, whatsappLabel }: {
   const pathname = usePathname();
   if (pathname === contactHref) return null;
   return (
-    <div className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-paper/92 px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur-md md:hidden">
+    <div className="fixed inset-x-0 bottom-0 z-30 bg-paper/92 px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur-md md:hidden">
       <div className="flex gap-2.5">
         <Link href={contactHref} className="btn btn-primary flex-1">
           {quote}
