@@ -8,7 +8,7 @@ import { FaqList } from "@/components/FaqList";
 import { ServiceObject } from "@/components/ServiceObject";
 import { SectionHeading } from "@/components/SectionHeading";
 import { Reveal } from "@/components/Reveal";
-import { getGeneralFaqs, getService, getServices, SITE_URL } from "@/lib/data";
+import { getGeneralFaqs, getService, getServices, getSettings, setting, SITE_URL } from "@/lib/data";
 import { prisma } from "@/lib/db";
 import { t as makeT } from "@/lib/i18n";
 import { getLocale, lines, pick } from "@/lib/locale";
@@ -44,7 +44,7 @@ async function countView(id: string) {
 
 export default async function ServicePage({ params }: Props) {
   const { slug } = await params;
-  const [service, locale, all, general] = await Promise.all([getService(slug), getLocale(), getServices(), getGeneralFaqs()]);
+  const [service, locale, all, general, settings] = await Promise.all([getService(slug), getLocale(), getServices(), getGeneralFaqs(), getSettings()]);
   if (!service) notFound();
   await countView(service.id);
 
@@ -137,6 +137,7 @@ export default async function ServicePage({ params }: Props) {
           </div>
           <div className="mt-10">
             <PricingGrid packages={service.packages} t={t} locale={locale} serviceSlug={service.slug} serviceTitle={title} />
+            <p className="mt-8 max-w-3xl text-sm leading-relaxed text-mute">{setting(settings, "pricing_note", locale) || t("pricing.fallbackNote")}</p>
           </div>
           <p className="mt-8 max-w-3xl text-sm leading-relaxed text-mute">{t("pricing.fallbackNote")}</p>
         </div>

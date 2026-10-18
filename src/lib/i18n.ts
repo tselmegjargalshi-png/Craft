@@ -76,7 +76,7 @@ const D = {
   "pricing.compare": ["Paketleri karşılaştır", "Compare packages"],
   "pricing.empty.t": ["Henüz paket yok", "No packages yet"],
   "pricing.empty.d": ["Bu hizmet için paketler yakında burada olacak. Bu arada bize yazabilirsiniz.", "Packages for this service will appear here soon. In the meantime, just write to us."],
-  "pricing.fallbackNote": ["Listelenen fiyatlar başlangıç / referans fiyatlarıdır; net tutar projenizin kapsamına göre teklifte belirtilir.", "Listed prices are starting / reference prices; the final amount is stated in your quote based on project scope."],
+  "pricing.fallbackNote": ["Listelenen fiyatlar KDV dahildir; başlangıç / referans fiyatlarıdır ve net tutar projenizin kapsamına göre teklifte belirtilir.", "Listed prices include VAT (KDV); they are starting / reference prices and the final amount is stated in your quote based on project scope."],
 
   // service detail
   "svc.what": ["Nedir?", "What is it?"],

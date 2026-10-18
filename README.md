@@ -83,3 +83,8 @@ The admin UI follows the same TR/EN switch as the site.
 ## Tests
 
 `npm run build && npm run start`, then in another shell (with `.env` loaded) `npm run test:e2e` runs 34 Playwright checks against the running site: all 5 service pages and prices, TR↔EN switching, quote-form validation/success/persistence, API validation + honeypot + rate limit, admin auth, dashboard, service/package/FAQ CRUD, lead status, content/settings flow-through to the public site, logout, and no-horizontal-overflow at 360/390/430/768/1024 px. Use a freshly seeded DB (`npm run db:reset` — note Prisma refuses `--force-reset` when invoked by an AI agent, so run it yourself).
+
+
+## Deploy (Docker / Railway)
+
+A `Dockerfile`, `railway.json` and `scripts/start-prod.sh` are included. On Railway: New Project → Deploy from GitHub repo, attach a volume at `/data`, set `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `SESSION_SECRET` (and optionally `NEXT_PUBLIC_SITE_URL`), then Generate Domain. The container creates the SQLite schema and seeds an empty catalog on start. Prices are shown as KDV dahil by default; to change that, edit the pricing note under Admin → Content.

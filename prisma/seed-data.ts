@@ -674,8 +674,8 @@ export const settings: Record<string, [string, string]> = {
     "Tell us in a few lines and we'll settle on the right package and a clear price together.",
   ],
   pricing_note: [
-    "Listelenen fiyatlar başlangıç / referans fiyatlarıdır; net tutar projenizin kapsamına göre teklifte belirtilir.",
-    "Listed prices are starting / reference prices; the final amount is stated in your quote based on project scope.",
+    "Listelenen fiyatlar KDV dahildir; başlangıç / referans fiyatlarıdır ve net tutar projenizin kapsamına göre teklifte belirtilir.",
+    "Listed prices include VAT (KDV); they are starting / reference prices and the final amount is stated in your quote based on project scope.",
   ],
   footer_tagline: [
     "Profesyonel dijital çözümler, karmaşık süreçler olmadan.",
