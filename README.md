@@ -3,14 +3,14 @@
 Craft is a bilingual (Turkish default / English) digital-services website with a lightweight admin panel.
 A visitor lands → understands the offer → picks one of 5 services → compares 5 packages → sees what's included and the price → sends a quote request.
 
-**Stack:** Next.js 15 (App Router) · TypeScript · Tailwind CSS 4 · Prisma 6 + SQLite · Zod · jose (JWT session) + bcryptjs · motion (only the small `LazyMotion` DOM bundle, used for the hero).
+**Stack:** Next.js 15 (App Router) · TypeScript · Tailwind CSS 4 · Prisma 6 + PostgreSQL · Zod · jose (JWT session) + bcryptjs · motion (only the small `LazyMotion` DOM bundle, used for the hero).
 
 ## Quick start
 
 ```bash
 npm install
 cp .env.example .env          # then edit ADMIN_EMAIL, ADMIN_PASSWORD, SESSION_SECRET
-npm run setup                 # prisma generate + create SQLite DB + seed (5 services, 25 packages, FAQ, settings)
+npm run setup                 # prisma generate + create tables + seed (5 services, 25 packages, FAQ, settings)
 npm run dev                   # http://localhost:3000   ·   admin: http://localhost:3000/admin
 ```
 
@@ -18,7 +18,7 @@ Production: `npm run build && npm run start`.
 
 | Env var | Purpose |
 |---|---|
-| `DATABASE_URL` | `file:./dev.db` (SQLite, relative to `prisma/`) |
+| `DATABASE_URL` | PostgreSQL connection string, e.g. `postgresql://user:pass@localhost:5432/craft` (Neon, Supabase, Vercel Postgres or local) |
 | `ADMIN_EMAIL`, `ADMIN_PASSWORD` | Admin account. `npm run db:seed` hashes the password (bcrypt, cost 12) into the `User` table. Re-run the seed after changing them. The password is never stored in code. |
 | `SESSION_SECRET` | 32+ chars, signs the admin session cookie. `openssl rand -base64 48` |
 | `NEXT_PUBLIC_SITE_URL` | Canonical / sitemap / Open Graph base URL |
@@ -72,7 +72,7 @@ The admin UI follows the same TR/EN switch as the site.
 ## Known limitations / things to decide
 
 1. **Rate limiting is in-memory** – correct for one Node process. Behind several instances or serverless, use Redis/Upstash or your host's WAF.
-2. **SQLite needs a persistent disk.** On Vercel/Netlify-style hosts the file would not persist. Use a VPS/Docker volume (Railway, Fly, Render with disk), or switch to Postgres: change `provider` to `postgresql` in `schema.prisma`, set a Postgres `DATABASE_URL`, run `npx prisma db push && npm run db:seed`. (Not tested here.)
+2. **PostgreSQL required.** The schema was originally SQLite; it now targets Postgres (verified: build + 34/34 e2e against Postgres 16). Tables are created with `prisma db push` (no migration history yet).
 3. **Language lives in the URL.** Turkish at `/...`, English at `/en/...` (a middleware rewrite, one codebase). Every page has `canonical` + `hreflang` (tr, en, x-default) and the sitemap lists both versions. The TR/EN switcher does a full navigation to the same page in the other language. Admin stays at `/admin` (language via cookie, not indexed).
 4. **Business copy is a draft.** Delivery times, payment plan, revision rules, "domain/hosting not included", support length in the FAQ and package texts are sensible defaults, not your policies — edit them in the admin before launch. Prices follow your brief; whether they include KDV is not stated anywhere on the site.
 5. **WhatsApp and Instagram are empty** in the seed (no real numbers invented). Fill them in under Settings. The seeded e-mail is `hello@craft.example`.
@@ -82,9 +82,12 @@ The admin UI follows the same TR/EN switch as the site.
 
 ## Tests
 
-`npm run build && npm run start`, then in another shell (with `.env` loaded) `npm run test:e2e` runs 34 Playwright checks against the running site: all 5 service pages and prices, TR↔EN switching, quote-form validation/success/persistence, API validation + honeypot + rate limit, admin auth, dashboard, service/package/FAQ CRUD, lead status, content/settings flow-through to the public site, logout, and no-horizontal-overflow at 360/390/430/768/1024 px. Use a freshly seeded DB (`npm run db:reset` — note Prisma refuses `--force-reset` when invoked by an AI agent, so run it yourself).
+`npm run build && npm run start`, then in another shell (with `.env` loaded) `npm run test:e2e` runs 34 Playwright checks against the running site: all 5 service pages and prices, TR↔EN switching, quote-form validation/success/persistence, API validation + honeypot + rate limit, admin auth, dashboard, service/package/FAQ CRUD, lead status, content/settings flow-through to the public site, logout, and no-horizontal-overflow at 360/390/430/768/1024 px. Use a freshly seeded DB (`npm run db:reset` wipes the configured DB; Prisma refuses `--force-reset` when invoked by an AI agent, so run it yourself).
 
+## Deploy on Vercel
 
-## Deploy (Docker / Railway)
-
-A `Dockerfile`, `railway.json` and `scripts/start-prod.sh` are included. On Railway: New Project → Deploy from GitHub repo, attach a volume at `/data`, set `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `SESSION_SECRET` (and optionally `NEXT_PUBLIC_SITE_URL`), then Generate Domain. The container creates the SQLite schema and seeds an empty catalog on start. Prices are shown as KDV dahil by default; to change that, edit the pricing note under Admin → Content.
+1. Create a free Postgres (Neon, or Vercel → Storage). Copy its connection string.
+2. Vercel → Add New Project → import this repo. `vercel.json` sets the build to `npm run vercel-build` (generate client, `prisma db push`, idempotent seed, `next build`).
+3. Environment variables: `DATABASE_URL`, `ADMIN_EMAIL`, `ADMIN_PASSWORD` (10+ chars), `SESSION_SECRET` (`openssl rand -base64 48`), `NEXT_PUBLIC_SITE_URL` (your final https URL).
+4. Deploy. The build creates the tables and seeds an empty catalog plus the admin user (idempotent: existing content is never overwritten).
+5. Log in at `/admin/login`. Prices are shown as **KDV dahil** by default; to change it, edit the pricing note under Admin → Content.
