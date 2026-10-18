@@ -1,0 +1,110 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+}
+
+model Service {
+  id         String    @id @default(cuid())
+  slug       String    @unique
+  icon       String    @default("web") // web | menu | nfc | webapp | app
+  order      Int       @default(0)
+  enabled    Boolean   @default(true)
+  views      Int       @default(0)
+  titleTr    String
+  titleEn    String
+  taglineTr  String
+  taglineEn  String
+  descTr     String
+  descEn     String
+  whatTr     String    @default("")
+  whatEn     String    @default("")
+  whoTr      String    @default("") // one item per line
+  whoEn      String    @default("")
+  buildTr    String    @default("") // one item per line, "Title — description"
+  buildEn    String    @default("")
+  metaDescTr String    @default("")
+  metaDescEn String    @default("")
+  packages   Package[]
+  faqs       Faq[]
+}
+
+model Package {
+  id            String           @id @default(cuid())
+  serviceId     String
+  service       Service          @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  order         Int              @default(0)
+  visible       Boolean          @default(true)
+  highlight     Boolean          @default(false)
+  nameTr        String
+  nameEn        String
+  price         Int? // null = "get a quote"
+  currency      String           @default("TRY")
+  billing       String           @default("ONE_TIME") // ONE_TIME | MONTHLY | YEARLY | QUOTE
+  startingPrice Boolean          @default(true)
+  noteTr        String           @default("") // e.g. "Kart dahil"
+  noteEn        String           @default("")
+  descTr        String
+  descEn        String
+  ctaTr         String           @default("Teklif Al")
+  ctaEn         String           @default("Get a Quote")
+  features      PackageFeature[]
+
+  @@index([serviceId, order])
+}
+
+model PackageFeature {
+  id        String  @id @default(cuid())
+  packageId String
+  package   Package @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  order     Int     @default(0)
+  textTr    String
+  textEn    String
+
+  @@index([packageId, order])
+}
+
+model Faq {
+  id        String   @id @default(cuid())
+  serviceId String? // null = general FAQ shown on the homepage
+  service   Service? @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  order     Int      @default(0)
+  visible   Boolean  @default(true)
+  qTr       String
+  qEn       String
+  aTr       String
+  aEn       String
+}
+
+model Lead {
+  id           String   @id @default(cuid())
+  name         String
+  email        String
+  whatsapp     String
+  serviceSlug  String   @default("")
+  serviceTitle String   @default("")
+  packageName  String   @default("")
+  budget       String   @default("")
+  message      String   @default("")
+  status       String   @default("NEW") // NEW | CONTACTED | IN_PROGRESS | COMPLETED | ARCHIVED
+  locale       String   @default("tr")
+  createdAt    DateTime @default(now())
+
+  @@index([status, createdAt])
+}
+
+model Setting {
+  key     String @id
+  valueTr String @default("")
+  valueEn String @default("")
+}
