@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { getGeneralFaqs, getService, getServices, getSettings } from "@/lib/data";
 
 export const dynamic = "force-dynamic";
 
@@ -32,6 +33,11 @@ export async function GET() {
     const s = await prisma.service.findFirst();
     if (s) await prisma.service.update({ where: { id: s.id }, data: { views: { increment: 1 } } });
     return !!s;
+  });
+  await run("pageDataParallel", async () => {
+    const slug = (await prisma.service.findFirst({ select: { slug: true } }))?.slug ?? "";
+    const [svc, all, faqs, settings] = await Promise.all([getService(slug), getServices(), getGeneralFaqs(), getSettings()]);
+    return { slug, found: !!svc, packages: svc?.packages.length, all: all.length, faqs: faqs.length, settings: Object.keys(settings).length };
   });
   const ok = Object.values(checks).every((c) => (c as { ok: boolean }).ok);
   return NextResponse.json({ ok, node: process.version, checks }, { status: ok ? 200 : 500 });
