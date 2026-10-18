@@ -88,6 +88,6 @@ The admin UI follows the same TR/EN switch as the site.
 
 1. Create a free Postgres (Neon, or Vercel → Storage). Copy its connection string.
 2. Vercel → Add New Project → import this repo. `vercel.json` sets the build to `npm run vercel-build` (generate client, `prisma db push`, idempotent seed, `next build`).
-3. Environment variables: `DATABASE_URL`, `ADMIN_EMAIL`, `ADMIN_PASSWORD` (10+ chars), `SESSION_SECRET` (`openssl rand -base64 48`), `NEXT_PUBLIC_SITE_URL` (your final https URL).
+3. Environment variables: `DATABASE_URL` (pooled/runtime; with Supabase use the transaction pooler on port 6543 plus `?pgbouncer=true&connection_limit=1`), `DIRECT_URL` (direct or session-pooler connection on port 5432, used by `prisma db push`), `ADMIN_EMAIL`, `ADMIN_PASSWORD` (10+ chars), `SESSION_SECRET` (`openssl rand -base64 48`), `NEXT_PUBLIC_SITE_URL` (your final https URL).
 4. Deploy. The build creates the tables and seeds an empty catalog plus the admin user (idempotent: existing content is never overwritten).
 5. Log in at `/admin/login`. Prices are shown as **KDV dahil** by default; to change it, edit the pricing note under Admin → Content.
